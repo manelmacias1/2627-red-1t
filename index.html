@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cercador de REDs - 1r Trimestre</title>
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --primary-hover: #004085;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+            --badge-bg: #e9ecef;
+            --highlight: #28a745;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 20px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0 0 10px 0;
+            font-size: 1.8rem;
+        }
+
+        .notice-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 12px 18px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #856404;
+            line-height: 1.4;
+            margin-top: 15px;
+        }
+
+        .filters-card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-reset {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+            height: 42px;
+        }
+
+        .btn-reset:hover {
+            background-color: #5a6268;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        th:hover {
+            background-color: #e9ecef;
+        }
+
+        tr:hover {
+            background-color: #f1f8ff;
+        }
+
+        .badge-date {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge-group {
+            display: inline-block;
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .badge-aula {
+            display: inline-block;
+            background-color: #fff3e0;
+            color: #e65100;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .filters-grid { grid-template-columns: 1fr; }
+            th, td { padding: 8px 10px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Planificació de Reunions d'Avaluació Diagnòstica (RED)</h1>
+        <p style="margin: 0; color: #666;">Cercador àgil per al professorat - 1r Trimestre</p>
+        
+        <div class="notice-box">
+            <strong>IMPORTANT:</strong> Respectar els dies i hores de les RED, ja que el calendari s’ha establert de forma que al professorat transversal (FOL, Anglès, professorat d’altres departaments) li coincideixi el menor nombre de RED. Qualsevol canvi cal sol·licitar-lo a cap d’estudis i s’estudiarà si és viable.<br>
+            El/La tutor/a ha de convocar la reunió a través de la plataforma <strong>iEduca</strong> d’acord a la data i hora d'aquesta planificació. Posteriorment, cal confeccionar l’acta corresponent.
+        </div>
+    </header>
+
+    <div class="filters-card">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label for="search">Cerca ràpida (Grup, Aula, Cicle...)</label>
+                <input type="text" id="search" placeholder="Ex: 2n SMX, Activa-1, Dietètica...">
+            </div>
+
+            <div class="filter-group">
+                <label for="filter-date">Data</label>
+                <select id="filter-date">
+                    <option value="">Totes les dates</option>
+                    <option value="Dimecres 07/10/2026">Dimecres 07/10/2026</option>
+                    <option value="Dimecres 14/10/2026">Dimecres 14/10/2026</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filter-family">Família Professional</label>
+                <select id="filter-family">
+                    <option value="">Totes les famílies</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filter-group">Grup</label>
+                <select id="filter-group">
+                    <option value="">Tots els grups</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="filter-hour">Franja Horària</label>
+                <select id="filter-hour">
+                    <option value="">Totes les hores</option>
+                </select>
+            </div>
+
+            <button class="btn-reset" onclick="resetFilters()">Netejar Filtres</button>
+        </div>
+    </div>
+
+    <div class="stats-bar">
+        <span id="results-count">S'estan carregant les dades...</span>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Data ↕</th>
+                    <th onclick="sortTable(1)">Hora ↕</th>
+                    <th onclick="sortTable(2)">Família Professional ↕</th>
+                    <th onclick="sortTable(3)">Cicle Formatiu ↕</th>
+                    <th onclick="sortTable(4)">Grup ↕</th>
+                    <th onclick="sortTable(5)">Aula ↕</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const redData = [
+        // Dimecres 07/10/2026
+        { data: "Dimecres 07/10/2026", hora: "9:00 - 10:00", familia: "Informàtica i comunicacions", cicle: "CFGM Sistemes microinformàtics i xarxes", grup: "2n SMX B", aula: "27" },
+        { data: "Dimecres 07/10/2026", hora: "9:00 - 10:00", familia: "Sanitat", cicle: "CFGS Laboratori clínic i biomèdic", grup: "2n LCB", aula: "11" },
+        { data: "Dimecres 07/10/2026", hora: "10:00 - 11:00", familia: "Sanitat", cicle: "CFGM Emergències sanitàries", grup: "2n ES C", aula: "14" },
+        { data: "Dimecres 07/10/2026", hora: "10:00 - 11:00", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGM Atenció a persones en situació de dependència", grup: "2n APD", aula: "Activa-1" },
+        { data: "Dimecres 07/10/2026", hora: "11:30 - 12:30", familia: "Administració i gestió", cicle: "CFGS Assistència a la direcció", grup: "2n ADI", aula: "B1" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Administració i gestió", cicle: "CFGS Administració i finances / Assistència a la direcció", grup: "1r AF-ADI A", aula: "31" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Comerç i màrqueting", cicle: "CFGM Activitats comercials", grup: "1r ACO", aula: "34" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Electricitat i electrònica", cicle: "CFGS Eficiència energètica i energia solar tèrmica", grup: "2n EE", aula: "E12" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Transport i m. de vehicles", cicle: "PFI Aux. manteniment-reparació vehicles mob.pers.", grup: "1r TM05", aula: "E7" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Transport i m. de vehicles", cicle: "CE Aeronaus tripulades de forma remota – Drons", grup: "1r DRONS", aula: "Altell-2" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Imatge i so", cicle: "CFGS Realització de projectes d’audiovisuals i espectacles", grup: "1r RPAE", aula: "E8" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Informàtica i comunicacions", cicle: "CFGM Sistemes microinformàtics i xarxes", grup: "1r SMX BC", aula: "20.2" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Fabricació mecànica", cicle: "PFI PTT Auxiliar de manteniment electromecànic", grup: "1r FM05", aula: "E6" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Fabricació mecànica", cicle: "CFGM Mecanització", grup: "1r MEC", aula: "E15" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Sanitat", cicle: "CFGM Cures auxiliars d’infermeria", grup: "CAI C", aula: "27" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "Sanitat", cicle: "CFGS Laboratori clínic i biomèdic", grup: "1r LCB", aula: "11" },
+        { data: "Dimecres 07/10/2026", hora: "12:30 - 13:20", familia: "IFE", cicle: "IFE Manteniment instal·lacions esportives", grup: "3r IFE", aula: "29" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Arts gràfiques", cicle: "CFGM Preimpressió digital", grup: "2n PRID", aula: "20.5" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Administració i gestió", cicle: "CFGS Administració i finances / Assistència a la direcció", grup: "1r AF-ADI B", aula: "31" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Comerç i màrqueting", cicle: "CFGM Activitats comercials", grup: "2n ACO", aula: "34" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Electricitat i electrònica", cicle: "CFGS Automatització i robòtica industrial", grup: "1r ARI", aula: "E13" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Informàtica i comunicacions", cicle: "CFGM Sistemes microinformàtics i xarxes", grup: "1r SMX AC", aula: "20.2" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Instal·lació i manteniment", cicle: "CFGM Manteniment electromecànic", grup: "2n MEM", aula: "E14" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Sanitat", cicle: "CFGM Cures auxiliars d’infermeria", grup: "CAI B", aula: "28" },
+        { data: "Dimecres 07/10/2026", hora: "13:20 - 14:10", familia: "Sanitat", cicle: "CFGS Imatge per al diagnòstic i medicina nuclear", grup: "1r IDM A", aula: "E17" },
+        { data: "Dimecres 07/10/2026", hora: "15:10 - 16:00", familia: "Arts gràfiques", cicle: "CFGM Preimpressió digital", grup: "1r PRID", aula: "20.5" },
+        { data: "Dimecres 07/10/2026", hora: "15:10 - 16:00", familia: "Comerç i màrqueting", cicle: "CFGS Màrqueting i publicitat", grup: "1r MAP", aula: "35" },
+        { data: "Dimecres 07/10/2026", hora: "15:10 - 16:00", familia: "Informàtica i comunicacions", cicle: "CFGS Administració de sistemes informàtics en xarxa (ciber.)", grup: "2n ASIX", aula: "20.3" },
+        { data: "Dimecres 07/10/2026", hora: "15:10 - 16:00", familia: "Instal·lació i manteniment", cicle: "CFGM Manteniment electromecànic", grup: "1r MEM", aula: "E14" },
+        { data: "Dimecres 07/10/2026", hora: "15:10 - 16:00", familia: "Sanitat", cicle: "CFGM Farmàcia i parafarmàcia", grup: "2n FAR BC", aula: "17" },
+        { data: "Dimecres 07/10/2026", hora: "15:10 - 16:00", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGS Integració social", grup: "2n INS B", aula: "B2" },
+        { data: "Dimecres 07/10/2026", hora: "15:10 - 16:00", familia: "IFE", cicle: "IFE Manteniment instal·lacions esportives", grup: "4t IFE", aula: "29" },
+        { data: "Dimecres 07/10/2026", hora: "16:00 - 17:00", familia: "Administració i gestió", cicle: "CFGM Gestió administrativa (àmbit sanitari)", grup: "1r GAD-SAN", aula: "E2" },
+        { data: "Dimecres 07/10/2026", hora: "16:00 - 17:00", familia: "Electricitat i electrònica", cicle: "CFGS Eficiència energètica i energia solar tèrmica", grup: "1r EE", aula: "E13" },
+        { data: "Dimecres 07/10/2026", hora: "16:00 - 17:00", familia: "Sanitat", cicle: "CFGM Emergències sanitàries", grup: "1r ES B", aula: "ES1" },
+        { data: "Dimecres 07/10/2026", hora: "17:00 - 18:00", familia: "Fabricació mecànica", cicle: "CFGS Programació de la producció en fabricació mecànica", grup: "1r PPFM", aula: "E6" },
+
+        // Dimecres 14/10/2026
+        { data: "Dimecres 14/10/2026", hora: "10:00 - 11:00", familia: "Administració i gestió", cicle: "CFGM Gestió administrativa (àmbit sanitari)", grup: "2n GAD-SAN", aula: "27" },
+        { data: "Dimecres 14/10/2026", hora: "10:00 - 11:00", familia: "Sanitat", cicle: "CFGM Emergències sanitàries", grup: "2n ES A", aula: "14" },
+        { data: "Dimecres 14/10/2026", hora: "11:30 - 12:30", familia: "Arts gràfiques", cicle: "CFGS Disseny i edició de publicacions impreses i multimèdia", grup: "1r DEPIM", aula: "14" },
+        { data: "Dimecres 14/10/2026", hora: "11:30 - 12:30", familia: "Comerç i màrqueting", cicle: "CFGS Comerç internacional", grup: "2n COMINT", aula: "B1" },
+        { data: "Dimecres 14/10/2026", hora: "11:30 - 12:30", familia: "Informàtica i comunicacions", cicle: "CFGS Desenvolupament d’aplicacions multiplataforma", grup: "2n DAM", aula: "E5" },
+        { data: "Dimecres 14/10/2026", hora: "11:30 - 12:30", familia: "Fabricació mecànica", cicle: "CFGM Soldadura i caldereria", grup: "2n SIC", aula: "E1" },
+        { data: "Dimecres 14/10/2026", hora: "11:30 - 12:30", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGS Integració social", grup: "2n INS A", aula: "B2" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Administració i gestió", cicle: "CFGM Gestió administrativa", grup: "2n GAD", aula: "32" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Arts gràfiques", cicle: "CFGS Disseny i edició de publicacions impreses i multimèdia", grup: "2n DEPIM", aula: "20.6" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Comerç i màrqueting", cicle: "CFGS Comerç internacional", grup: "1r COMINT", aula: "36" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Electricitat i electrònica", cicle: "CFGM Instal·lacions electròniques i automàtiques", grup: "2n IEA", aula: "E13" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Informàtica i comunicacions", cicle: "CFGS Desenvolupament d’aplicacions multiplataforma", grup: "1r DAM", aula: "21" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Sanitat", cicle: "CFGM Emergències sanitàries", grup: "1r ES A", aula: "ES1" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Sanitat", cicle: "CFGS Dietètica", grup: "2n DIE", aula: "28" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGS Integració social", grup: "1r INS B", aula: "E3" },
+        { data: "Dimecres 14/10/2026", hora: "12:30 - 13:20", familia: "IFE", cicle: "IFE Manteniment instal·lacions esportives", grup: "1r IFE", aula: "29" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Administració i gestió", cicle: "CFGS Administració i finances", grup: "2n AF", aula: "31" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Comerç i màrqueting", cicle: "CFGS Màrqueting i publicitat", grup: "2n MAP", aula: "35" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Electricitat i electrònica", cicle: "CFGS Automatització i robòtica industrial", grup: "2n ARI", aula: "E13" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Instal·lació i manteniment", cicle: "Curs especialització Fabricació Intel·ligent", grup: "1r FABIN", aula: "Altell-2" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Informàtica i comunicacions", cicle: "CFGS Administració de sistemes informàtics en xarxa (ciber.)", grup: "1r ASIX", aula: "20.3" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Fabricació mecànica", cicle: "CFGS Programació de la producció en fabricació mecànica", grup: "2n PPFM", aula: "E16" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Sanitat", cicle: "CFGM Cures auxiliars d’infermeria", grup: "CAI A", aula: "27" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Sanitat", cicle: "CFGM Emergències sanitàries", grup: "2n ES B", aula: "ES1" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Sanitat", cicle: "CFGS Imatge per al diagnòstic i medicina nuclear", grup: "2n IDM B", aula: "E17" },
+        { data: "Dimecres 14/10/2026", hora: "13:20 - 14:10", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGM Atenció a persones en situació de dependència", grup: "1r APD", aula: "22" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Administració i gestió", cicle: "CFGM Gestió administrativa", grup: "1r GAD", aula: "32" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Electricitat i electrònica", cicle: "CFGM Instal·lacions elèctriques i automàtiques", grup: "1r IEA", aula: "E13" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Imatge i so", cicle: "CFGS Realització de projectes d’audiovisuals i espectacles", grup: "2n RPAE", aula: "E8" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Informàtica i comunicacions", cicle: "CFGM Sistemes microinformàtics i xarxes", grup: "2n SMX A", aula: "20.2" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Fabricació mecànica", cicle: "CFGM Mecanització", grup: "2n MEC", aula: "E15" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Fabricació mecànica", cicle: "CFGM Soldadura i caldereria", grup: "1r SIC", aula: "E16" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Sanitat", cicle: "CFGM Farmàcia i parafarmàcia", grup: "2n FAR AC", aula: "17" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Sanitat", cicle: "CFGS Imatge per al diagnòstic i medicina nuclear", grup: "2n IDM A", aula: "E17" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGS Educació infantil", grup: "2n EIN", aula: "E11" },
+        { data: "Dimecres 14/10/2026", hora: "15:10 - 16:00", familia: "IFE", cicle: "IFE Manteniment instal·lacions esportives", grup: "2n IFE", aula: "29" },
+        { data: "Dimecres 14/10/2026", hora: "16:00 - 17:00", familia: "Sanitat", cicle: "CFGM Farmàcia i parafarmàcia", grup: "1r FAR BC", aula: "16" },
+        { data: "Dimecres 14/10/2026", hora: "16:00 - 17:00", familia: "Sanitat", cicle: "CFGS Dietètica", grup: "1r DIE", aula: "27" },
+        { data: "Dimecres 14/10/2026", hora: "16:00 - 17:00", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGS Integració social", grup: "1r INS A", aula: "E4" },
+        { data: "Dimecres 14/10/2026", hora: "17:00 - 18:00", familia: "Sanitat", cicle: "CFGM Farmàcia i parafarmàcia", grup: "1r FAR AC", aula: "10" },
+        { data: "Dimecres 14/10/2026", hora: "17:00 - 18:00", familia: "Serveis socioculturals i a la comunitat", cicle: "CFGS Educació infantil", grup: "1r EIN", aula: "E9" }
+    ];
+
+    let currentSortColumn = -1;
+    let currentSortAsc = true;
+
+    function populateSelectOptions() {
+        const familySelect = document.getElementById('filter-family');
+        const groupSelect = document.getElementById('filter-group');
+        const hourSelect = document.getElementById('filter-hour');
+
+        const families = [...new Set(redData.map(item => item.familia))].sort();
+        const groups = [...new Set(redData.map(item => item.grup))].sort();
+        const hours = [...new Set(redData.map(item => item.hora))].sort();
+
+        families.forEach(f => {
+            const opt = document.createElement('option');
+            opt.value = f;
+            opt.textContent = f;
+            familySelect.appendChild(opt);
+        });
+
+        groups.forEach(g => {
+            const opt = document.createElement('option');
+            opt.value = g;
+            opt.textContent = g;
+            groupSelect.appendChild(opt);
+        });
+
+        hours.forEach(h => {
+            const opt = document.createElement('option');
+            opt.value = h;
+            opt.textContent = h;
+            hourSelect.appendChild(opt);
+        });
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('table-body');
+        const countSpan = document.getElementById('results-count');
+        tbody.innerHTML = '';
+
+        countSpan.textContent = `S'han trobat ${data.length} sessions de RED`;
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="no-results">No s'ha trobat cap sessió amb els filtres seleccionats.</td></tr>`;
+            return;
+        }
+
+        data.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="badge-date">${item.data}</span></td>
+                <td><strong>${item.hora}</strong></td>
+                <td>${item.familia}</td>
+                <td>${item.cicle}</td>
+                <td><span class="badge-group">${item.grup}</span></td>
+                <td><span class="badge-aula">${item.aula}</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterData() {
+        const searchValue = document.getElementById('search').value.toLowerCase().trim();
+        const dateValue = document.getElementById('filter-date').value;
+        const familyValue = document.getElementById('filter-family').value;
+        const groupValue = document.getElementById('filter-group').value;
+        const hourValue = document.getElementById('filter-hour').value;
+
+        const filtered = redData.filter(item => {
+            const matchesSearch = !searchValue || 
+                item.grup.toLowerCase().includes(searchValue) ||
+                item.cicle.toLowerCase().includes(searchValue) ||
+                item.familia.toLowerCase().includes(searchValue) ||
+                item.aula.toLowerCase().includes(searchValue) ||
+                item.hora.toLowerCase().includes(searchValue);
+
+            const matchesDate = !dateValue || item.data === dateValue;
+            const matchesFamily = !familyValue || item.familia === familyValue;
+            const matchesGroup = !groupValue || item.grup === groupValue;
+            const matchesHour = !hourValue || item.hora === hourValue;
+
+            return matchesSearch && matchesDate && matchesFamily && matchesGroup && matchesHour;
+        });
+
+        renderTable(filtered);
+    }
+
+    function resetFilters() {
+        document.getElementById('search').value = '';
+        document.getElementById('filter-date').value = '';
+        document.getElementById('filter-family').value = '';
+        document.getElementById('filter-group').value = '';
+        document.getElementById('filter-hour').value = '';
+        renderTable(redData);
+    }
+
+    function sortTable(columnIndex) {
+        const keys = ['data', 'hora', 'familia', 'cicle', 'grup', 'aula'];
+        const key = keys[columnIndex];
+
+        if (currentSortColumn === columnIndex) {
+            currentSortAsc = !currentSortAsc;
+        } else {
+            currentSortColumn = columnIndex;
+            currentSortAsc = true;
+        }
+
+        redData.sort((a, b) => {
+            let valA = a[key].toLowerCase();
+            let valB = b[key].toLowerCase();
+            if (valA < valB) return currentSortAsc ? -1 : 1;
+            if (valA > valB) return currentSortAsc ? 1 : -1;
+            return 0;
+        });
+
+        filterData();
+    }
+
+    document.getElementById('search').addEventListener('input', filterData);
+    document.getElementById('filter-date').addEventListener('change', filterData);
+    document.getElementById('filter-family').addEventListener('change', filterData);
+    document.getElementById('filter-group').addEventListener('change', filterData);
+    document.getElementById('filter-hour').addEventListener('change', filterData);
+
+    // Inicialització
+    populateSelectOptions();
+    renderTable(redData);
+</script>
+
+</body>
+</html>
